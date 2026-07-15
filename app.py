@@ -93,9 +93,9 @@ def load_linked_sector_data():
         ROUND(AVG(n.sentiment_score), 4) AS live_market_sentiment,
         COUNT(n.title) AS total_live_headlines
     FROM 
-        startup_funding c
+        venturescope.startup_funding c
     JOIN 
-        news_sentiment n ON n.sector = c.sector
+        venturescope.news_sentiment n ON n.sector = c.sector
     WHERE 
         c.country_code IS NOT NULL AND c.country_code != ''
     GROUP BY 

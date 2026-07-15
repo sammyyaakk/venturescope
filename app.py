@@ -97,7 +97,7 @@ def load_linked_sector_data():
     JOIN 
         venturescope.news_sentiment n ON n.sector = c.sector
     WHERE 
-        n.sector <> 'other' AND c.country_code IS NOT NULL AND c.country_code != ''
+        n.sector <> 'nonexistent_sector' AND c.country_code IS NOT NULL AND c.country_code != ''
     GROUP BY 
         c.sector, c.country_code
     """

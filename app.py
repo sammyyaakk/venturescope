@@ -103,7 +103,7 @@ def load_linked_sector_data():
     GROUP BY 
         c.sector, c.country_code
     """
-    query = "SELECT COUNT(*) FROM news_sentiment"
+    
     return pd.read_sql(query, conn)
 
 try:

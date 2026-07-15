@@ -80,9 +80,11 @@ def load_linked_sector_data():
         aws_access_key_id=st.secrets["aws_access_key_id"],
         aws_secret_access_key=st.secrets["aws_secret_access_key"],
         region_name=st.secrets["region_name"],
-        s3_staging_dir=st.secrets["s3_staging_dir"]
+        s3_staging_dir=st.secrets["s3_staging_dir"],
+        schema_name="venturescope"  # ADD THIS LINE
     )
     
+    # Now you can use simple table names because the connection is scoped
     query = """
     SELECT 
         c.sector AS venture_sector,
@@ -93,9 +95,9 @@ def load_linked_sector_data():
         ROUND(AVG(n.sentiment_score), 4) AS live_market_sentiment,
         COUNT(n.title) AS total_live_headlines
     FROM 
-        venturescope.startup_funding c
+        startup_funding c
     JOIN 
-        venturescope.news_sentiment n ON n.sector = c.sector
+        news_sentiment n ON n.sector = c.sector
     WHERE 
         c.country_code IS NOT NULL AND c.country_code != ''
     GROUP BY 

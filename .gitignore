@@ -1,0 +1,8 @@
+# Ignore local Streamlit secrets (Crucial for AWS security)
+.streamlit/secrets.toml
+
+# Ignore Python virtual environments and cache
+venv/
+.venv/
+__pycache__/
+*.pyc

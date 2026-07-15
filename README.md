@@ -1,5 +1,11 @@
 # VentureScope Analytics Hub
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://venturescope.streamlit.app)
+[![AWS](https://img.shields.io/badge/Cloud-AWS-FF9900?style=for-the-badge&logo=amazonaws)](https://aws.amazon.com)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python)](https://python.org)
+
+> **Live App:** [venturescope.streamlit.app](https://venturescope.streamlit.app)
+
 An end-to-end serverless data pipeline and interactive analytics engine designed to cross-reference historical venture capital allocation with real-time market sentiment.
 
 VentureScope serves as a leading indicator for capital rotation, identifying discrepancies between where venture money has historically flowed (Crunchbase data) and where public momentum is currently shifting (Live NLP News scraping).
@@ -82,7 +88,6 @@ streamlit run app.py
 
 ### Future Roadmap
 
-* Migrate the local Streamlit deployment to a fully hosted AWS EC2 instance or Streamlit Community Cloud.
 * Implement predictive time-series forecasting to estimate sentiment trajectory over the next fiscal quarter.
 * Integrate a secondary API for real-time macroeconomic indicators (Interest Rates, CPI) to add a third dimension to the divergence matrix.
 

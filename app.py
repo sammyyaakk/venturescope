@@ -86,18 +86,13 @@ def load_linked_sector_data():
     query = """
     SELECT 
         c.sector AS venture_sector,
-        c.country_code,
-        COUNT(DISTINCT c.name) AS historical_startup_count,
-        SUM(c.funding_total_usd) AS total_funding,
-        ROUND(AVG(c.funding_total_usd), 2) AS historical_avg_funding,
-        ROUND(AVG(n.sentiment_score), 4) AS live_market_sentiment,
-        COUNT(n.title) AS total_live_headlines
+        ...
     FROM 
         venturescope.startup_funding c
     JOIN 
-        venturescope.news_sentiment n ON n.sector = c.sector
-    WHERE 
-        n.sector <> 'nonexistent_sector' AND c.country_code IS NOT NULL AND c.country_code != ''
+        venturescope.news_sentiment n ON LOWER(TRIM(n.sector)) = LOWER(TRIM(c.sector))
+    -- Temporarily removed the 'other' filter to see all data
+    WHERE c.country_code IS NOT NULL AND c.country_code != ''
     GROUP BY 
         c.sector, c.country_code
     """

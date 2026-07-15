@@ -130,6 +130,10 @@ try:
         (df_raw["live_market_sentiment"] <= sentiment_range[1])
     ]
 
+    st.write(f"DEBUG: Raw data count: {len(df_raw)}")
+    st.write(f"DEBUG: Filtered data count: {len(df_filtered)}")
+    st.write(f"DEBUG: Selected sectors: {selected_sectors}")
+
     if df_filtered.empty:
         st.warning("Adjust your filter parameters to view data.")
     else:

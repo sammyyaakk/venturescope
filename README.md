@@ -6,91 +6,138 @@
 
 > **Live App:** [venturescope.streamlit.app](https://venturescope.streamlit.app)
 
-An end-to-end serverless data pipeline and interactive analytics engine designed to cross-reference historical venture capital allocation with real-time market sentiment.
+An end-to-end serverless data pipeline and interactive analytics dashboard that cross-references historical venture capital allocation with real-time investor sentiment from live news.
 
-VentureScope serves as a leading indicator for capital rotation, identifying discrepancies between where venture money has historically flowed (Crunchbase data) and where public momentum is currently shifting (Live NLP News scraping).
+VentureScope identifies discrepancies between where venture money has historically flowed (54,294 Crunchbase startup records) and where public momentum is currently shifting (live NLP-scored news headlines ingested every 3 hours automatically).
 
-### System Architecture
+---
 
-The project relies on a decoupled, serverless cloud architecture to ensure high availability and low compute costs:
+## System Architecture
 
-* **Data Ingestion:** AWS EventBridge triggers AWS Lambda functions on 3-hour intervals to scrape live financial news and pull historical startup datasets.
-* **Transformation & NLP:** AWS Glue processes the raw text, applying VADER Sentiment Analysis to score headlines across active venture sectors.
-* **Storage Layer:** Processed data is partitioned and stored as Parquet files within an Amazon S3 Data Lake.
-* **Query Engine:** Amazon Athena executes serverless SQL queries directly against S3. The dashboard utilizes an optimized direct hash-join to compile the cross-referenced data matrix in under 21 seconds.
-* **Presentation Layer:** Streamlit handles the frontend, leveraging Plotly for advanced geospatial and multi-dimensional rendering.
+```
+EventBridge (every 3 hours)
+        ↓
+AWS Lambda — fetches live VC/startup headlines from NewsAPI
+        ↓
+Amazon S3 — Raw Data Lake (JSON headlines + CSV funding data)
+        ↓
+AWS Glue — PySpark ETL + VADER NLP Sentiment Scoring
+        ↓
+Amazon S3 — Processed Data Lake (Parquet format)
+        ↓
+Amazon Athena — Serverless SQL Query Engine
+        ↓
+Streamlit Dashboard — Live Interactive Visualizations
+```
 
-### Core Features
+The pipeline is fully automated — no manual steps after deployment. Every 3 hours, Lambda ingests fresh headlines, Glue scores them with NLP, and the dashboard reflects the updated data on the next visit.
 
-* **Global Capital Deployment Map:** A choropleth visualization (log-scaled) mapping total historical funding across global ecosystems.
-* **Market Divergence Matrix:** A multi-variable scatter plot isolating sectors with high media sentiment but low historical funding (emerging markets) versus highly funded sectors experiencing negative media headwinds.
-* **Dynamic Executive Deduction:** An auto-generating text module that mathematically assesses the active filters to provide a plain-English summary of current macro conditions.
-* **Interactive Control Panel:** User-defined parameters to filter the pipeline by capital requirements and sentiment polarity tolerances.
+---
 
-### Technology Stack
+## Features
 
-* **Cloud Infrastructure:** AWS (S3, Athena, IAM, Lambda, Glue)
-* **Backend / Data Engineering:** Python, Pandas, PyAthena, SQL
-* **Frontend / Visualization:** Streamlit, Plotly Express
-* **Environment Management:** Python `venv`, Git
+- **Global Capital Deployment Map** — Choropleth visualization (log-scaled) mapping total historical funding across 115 countries
+- **Sector Funding Trends** — Year-over-year funding analysis across 8 sectors from 2000–2015
+- **Startup Funding Stage Funnel** — Tracks the drop-off rate from Seed through Series D across 17,000+ startups
+- **Live Investor Sentiment Index (ISI)** — Aggregated NLP sentiment score derived from live news headlines, updated every 3 hours
+- **Sentiment Distribution** — Real-time breakdown of positive, neutral, and negative market coverage
+- **Market Divergence Matrix** — Scatter plot isolating sectors with high sentiment but low historical funding (emerging opportunities)
+- **Dynamic Executive Summary** — Auto-generated plain-English market snapshot based on live pipeline data
 
-### Local Installation & Setup
+---
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Cloud Infrastructure | AWS S3, Lambda, Glue, Athena, EventBridge, IAM |
+| Data Processing | PySpark (AWS Glue), Pandas |
+| NLP / Sentiment | VADER (vaderSentiment) |
+| Query Engine | Amazon Athena (serverless SQL on Parquet) |
+| Dashboard | Streamlit, Plotly Express |
+| Data Sources | Crunchbase via Kaggle, NewsAPI |
+| Language | Python 3.12 |
+| Storage Format | Apache Parquet (Snappy compression) |
+
+---
+
+## Data Sources
+
+- **Startup Funding:** [Crunchbase dataset via Kaggle](https://www.kaggle.com/datasets/arindam235/startup-investments-crunchbase) — 54,294 records across 115 countries
+- **Live News:** [NewsAPI](https://newsapi.org) — startup and VC headlines fetched automatically every 3 hours
+
+---
+
+## Free Tier Cost
+
+This entire project runs at **~$0/month** on AWS free tier:
+
+| Service | Monthly Usage | Free Limit |
+|---|---|---|
+| AWS Lambda | ~240 invocations | 1,000,000 |
+| AWS Glue | ~7.2 DPU-hours | 10 DPU-hours |
+| Amazon S3 | ~100MB | 5GB |
+| Amazon Athena | ~250MB scanned | 5TB |
+| Amazon EventBridge | ~240 events | 14,000,000 |
+
+---
+
+## Local Setup
 
 To run this dashboard locally, ensure you have Python 3.11+ installed.
 
-1. Clone the repository:
-
-```powershell
+**1. Clone the repository:**
+```bash
 git clone https://github.com/sammyyaakk/venturescope.git
 cd venturescope
-
 ```
 
-2. Create and activate a secure virtual environment:
-
-```powershell
+**2. Create and activate a virtual environment:**
+```bash
 python -m venv venv
-.\venv\Scripts\Activate
-
+.\venv\Scripts\Activate     # Windows
+source venv/bin/activate    # Mac/Linux
 ```
 
-3. Install the required pipeline dependencies:
-
-```powershell
+**3. Install dependencies:**
+```bash
 pip install -r requirements.txt
-
 ```
 
-4. Configure AWS Credentials. Create a hidden Streamlit directory and a secrets file:
-
-```powershell
+**4. Configure AWS credentials:**
+```bash
 mkdir .streamlit
-New-Item -Path .streamlit/secrets.toml -ItemType File
-
 ```
 
-5. Add your AWS IAM Developer credentials to `.streamlit/secrets.toml`:
-
+Create `.streamlit/secrets.toml` and add:
 ```toml
 aws_access_key_id = "YOUR_ACCESS_KEY"
 aws_secret_access_key = "YOUR_SECRET_KEY"
 region_name = "us-east-1"
-s3_staging_dir = "s3://your-athena-query-results-bucket/"
-
+s3_staging_dir = "s3://your-curated-bucket/"
 ```
 
-6. Launch the analytics engine:
-
-```powershell
+**5. Run the dashboard:**
+```bash
 streamlit run app.py
-
 ```
 
-### Future Roadmap
+---
 
-* Implement predictive time-series forecasting to estimate sentiment trajectory over the next fiscal quarter.
-* Integrate a secondary API for real-time macroeconomic indicators (Interest Rates, CPI) to add a third dimension to the divergence matrix.
+## Future Roadmap
 
-### Author
+- Sector-level sentiment mapping — join news sentiment with funding data by matching sector tags for deeper correlation analysis
+- FinBERT integration — replace VADER with a domain-specific financial NLP model for higher sentiment accuracy
+- Real-time streaming — upgrade Lambda to Kinesis Data Firehose for sub-minute data refresh
+- Macroeconomic indicators — integrate interest rate and CPI data as a third analytical dimension
 
-Developed by Samyak Jain
+---
+
+## Author
+
+Developed by **Samyak Rajesh Jain**
+B.Tech Information Technology
+
+---
+
+*Pipeline runs automatically on AWS. Data refreshes every 3 hours.*

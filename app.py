@@ -221,11 +221,11 @@ def calculate_isi(df_sentiment):
     neg = df_sentiment.loc[df_sentiment["sentiment_label"] == "negative", "headline_count"].sum()
     isi = round(((pos - neg) / total) * 100, 2)
     if isi > 5:
-        label = "Bullish 📈"
+        label = "Bullish"
     elif isi < -5:
-        label = "Bearish 📉"
+        label = "Bearish"
     else:
-        label = "Neutral ➡️"
+        label = "Neutral"
     return isi, label
 
 
@@ -254,7 +254,7 @@ if not data_ok:
     st.stop()
 
 # ── Sidebar Filters ────────────────────────────────────────────────────────────
-st.sidebar.markdown("### 🔭 VentureScope")
+st.sidebar.markdown("### VentureScope")
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Filters**")
 
@@ -307,17 +307,22 @@ if not df_sector.empty:
     )
 
 # ── KPI Row ────────────────────────────────────────────────────────────────────
+# Correct avg deal size: total funding / total startups (weighted, not mean of means)
+total_funding_all = df_sector["total_funding"].sum()
+total_startups_all = df_sector["startup_count"].sum()
+weighted_avg_deal = total_funding_all / total_startups_all if total_startups_all > 0 else 0
+
 k1, k2, k3, k4, k5 = st.columns(5)
-k1.metric("Total Startups", f"{df_sector['startup_count'].sum():,}")
-k2.metric("Total Funding", f"${df_sector['total_funding'].sum()/1e9:.1f}B")
-k3.metric("Avg Deal Size", f"${df_sector['avg_funding'].mean():,.0f}")
-k4.metric("ISI Score", f"{isi_score:+.1f}%", delta=isi_label)
+k1.metric("Total Startups", f"{total_startups_all:,}")
+k2.metric("Total Funding", f"${total_funding_all/1e9:.1f}B")
+k3.metric("Avg Deal Size", f"${weighted_avg_deal/1e6:.1f}M")
+k4.metric("ISI Score", f"{isi_score:+.1f}%  {isi_label}")
 k5.metric("Headlines Processed", f"{total_headlines:,}")
 
 st.markdown("---")
 
 # ── Chart 1: Global Funding Map ────────────────────────────────────────────────
-st.markdown("### 🗺️ Global Capital Deployment")
+st.markdown("### Global Capital Deployment")
 fig_map = px.choropleth(
     df_geo,
     locations="country_code",
@@ -346,7 +351,7 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("### 📈 Funding Trends by Sector (2000–2015)")
+    st.markdown("### Funding Trends by Sector (2000–2015)")
     if df_trends_f.empty:
         st.info("No trend data available for selected sectors.")
     else:
@@ -366,7 +371,7 @@ with col1:
         st.plotly_chart(fig_line, use_container_width=True)
 
 with col2:
-    st.markdown("### 🏆 Sector Funding Distribution")
+    st.markdown("### Sector Funding Distribution")
     fig_bar = px.bar(
         df_sector.sort_values("total_funding", ascending=True),
         x="total_funding",
@@ -390,7 +395,7 @@ st.markdown("---")
 col3, col4 = st.columns(2)
 
 with col3:
-    st.markdown("### 🔻 Startup Funding Stage Funnel")
+    st.markdown("### Startup Funding Stage Funnel")
     if df_funnel_raw.empty:
         st.info("No funnel data available.")
     else:
@@ -420,7 +425,7 @@ with col3:
         st.plotly_chart(fig_funnel, use_container_width=True)
 
 with col4:
-    st.markdown("### 📰 Live Investor Sentiment")
+    st.markdown("### Live Investor Sentiment")
     if df_sentiment.empty:
         st.info("No sentiment data available yet. Pipeline may still be processing.")
     else:
@@ -457,7 +462,7 @@ with col4:
 st.markdown("---")
 
 # ── Sentiment Polarity Bar ─────────────────────────────────────────────────────
-st.markdown("### 📊 Sentiment Distribution")
+st.markdown("### Sentiment Distribution")
 if not df_sentiment.empty:
     col_sent1, col_sent2, col_sent3 = st.columns(3)
     for _, row in df_sentiment.iterrows():
@@ -465,11 +470,11 @@ if not df_sentiment.empty:
         count = int(row["headline_count"])
         score = float(row["avg_score"])
         if row["sentiment_label"] == "positive":
-            col_sent1.metric(f"✅ {label}", f"{count:,} headlines", f"Avg score: {score:+.3f}")
+            col_sent1.metric(label, f"{count:,} headlines", f"Avg score: {score:+.3f}")
         elif row["sentiment_label"] == "neutral":
-            col_sent2.metric(f"➡️ {label}", f"{count:,} headlines", f"Avg score: {score:+.3f}")
+            col_sent2.metric(label, f"{count:,} headlines", f"Avg score: {score:+.3f}")
         elif row["sentiment_label"] == "negative":
-            col_sent3.metric(f"🔴 {label}", f"{count:,} headlines", f"Avg score: {score:+.3f}")
+            col_sent3.metric(label, f"{count:,} headlines", f"Avg score: {score:+.3f}")
 
 st.markdown("---")
 
